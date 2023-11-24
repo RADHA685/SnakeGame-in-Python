@@ -1,0 +1,78 @@
+import pygame
+import sys
+import random
+pygame.init()
+
+screen_width = 640
+screen_height = 480
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption('Snake Game')
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+
+snake_position = [100, 50]
+snake_body = [[100, 50], [90, 50], [80, 50]]
+
+apple_position = [random.randrange(1, screen_width//10) * 10, random.randrange(1, screen_height//10) * 10]
+score = 0
+clock = pygame.time.Clock()
+direction = 'RIGHT'
+
+while True:
+    clock.tick(30)
+
+    # EVENTS
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+        # Change direction
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP and direction != 'DOWN':
+                direction = 'UP'
+            if event.key == pygame.K_DOWN and direction != 'UP':
+                direction = 'DOWN'
+            if event.key == pygame.K_LEFT and direction != 'RIGHT':
+                direction = 'LEFT'
+            if event.key == pygame.K_RIGHT and direction != 'LEFT':
+                direction = 'RIGHT'
+
+    # GAME LOGIC
+    # Move snake
+    if direction == 'UP':
+        snake_position[1] -= 10
+    if direction == 'DOWN':
+        snake_position[1] += 10
+    if direction == 'LEFT':
+        snake_position[0] -= 10
+    if direction == 'RIGHT':
+        snake_position[0] += 10
+
+    # Snake eats apple
+    if snake_position[0] == apple_position[0] and snake_position[1] == apple_position[1]:
+        score += 1
+        apple_position = [random.randrange(1, screen_width//10) * 10, random.randrange(1, screen_height//10) * 10]
+    else:
+        snake_body.pop()
+
+    snake_body.insert(0, list(snake_position))
+
+    # Collision with wall
+    if snake_position[0] < 0 or snake_position[0] >= screen_width or snake_position[1] < 0 or snake_position[1] >= screen_height:
+        break
+
+    # Collision with itself
+    if snake_position in snake_body[1:]:
+        break
+
+    # DRAWING
+    screen.fill(WHITE)
+
+    for pos in snake_body:
+        pygame.draw.rect(screen, GREEN, pygame.Rect(pos[0], pos[1], 10, 10))
+
+    pygame.draw.rect(screen, RED, pygame.Rect(apple_position[0], apple_position[1], 10, 10))
+
+    pygame.display.flip()
